@@ -198,6 +198,31 @@ func TestZeroOrMore(t *testing.T) {
 	as.Equal(parse.Input("blah"), s.Remaining)
 }
 
+func TestDefaulted(t *testing.T) {
+	as := assert.New(t)
+
+	optional := parse.String("hello").Optional()
+	s, f := optional.Parse("hello")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal("hello", s.Result)
+	as.Equal(parse.Input(""), s.Remaining)
+
+	s, f = optional.Parse("doof")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Nil(s.Result)
+	as.Equal(parse.Input("doof"), s.Remaining)
+
+	defaulted := parse.String("hello").DefaultTo(func() parse.Result {
+		return "nope"
+	})
+	s, f = defaulted.Parse("doof")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal("nope", s.Result)
+	as.Equal(parse.Input("doof"), s.Remaining)
+}
 func stringResults(r ...parse.Result) parse.Result {
 	var buf bytes.Buffer
 	for _, e := range r {

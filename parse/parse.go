@@ -15,6 +15,9 @@ type (
 	// Combiner takes multiple Result values and combines them into one
 	Combiner func(...Result) Result
 
+	// Emitter returns a Result
+	Emitter func() Result
+
 	// Input represents a Parser's input
 	Input string
 
@@ -72,6 +75,18 @@ func (p Parser) AndThen(other Parser) Parser {
 // of this Parser or the Result of the other Parser
 func (p Parser) OrElse(other Parser) Parser {
 	return OrElse(p, other)
+}
+
+// Optional returns a new Parser that will DefaultTo nil if the match
+// is not successful
+func (p Parser) Optional() Parser {
+	return Optional(p)
+}
+
+// DefaultTo returns a new Parser that will return the Result provided
+// by the Emitter if the match is not successful
+func (p Parser) DefaultTo(e Emitter) Parser {
+	return DefaultTo(p, e)
 }
 
 // Map returns a new Parser, the Result of which is a value generated
@@ -214,6 +229,25 @@ func Map(p Parser, fn Mapper) Parser {
 			return s.Remaining.succeedWith(fn(s.Result))
 		}
 		return nil, f
+	}
+}
+
+// Optional returns a new Parser that will DefaultTo nil if the match
+// is not successful
+func Optional(p Parser) Parser {
+	return DefaultTo(p, func() Result {
+		return nil
+	})
+}
+
+// DefaultTo returns a new Parser that will return the Result provided
+// by the Emitter if the match is not successful
+func DefaultTo(p Parser, missing Emitter) Parser {
+	return func(i Input) (*Success, *Failure) {
+		if s, f := p(i); f == nil {
+			return s, nil
+		}
+		return i.succeedWith(missing())
 	}
 }
 
