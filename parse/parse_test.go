@@ -160,6 +160,44 @@ func TestCombine(t *testing.T) {
 	as.Equal("good->->bye->->", s.Result)
 }
 
+func TestOneOrMore(t *testing.T) {
+	as := assert.New(t)
+
+	many := parse.String("hello").OneOrMore()
+	s, f := many.Parse("hellohellohello")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(3, len(s.Result.(parse.Combined)))
+	as.Equal("hello", s.Result.(parse.Combined)[2])
+
+	s, f = many.Parse("blah")
+	as.Nil(s)
+	as.NotNil(f)
+	as.EqualError(f.Error,
+		fmt.Sprintf(parse.ErrWrappedExpectation,
+			fmt.Sprintf(parse.ErrExpectedString, "hello"),
+			"blah",
+		),
+	)
+}
+
+func TestZeroOrMore(t *testing.T) {
+	as := assert.New(t)
+
+	many := parse.String("hello").ZeroOrMore()
+	s, f := many.Parse("hellohellohello")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(3, len(s.Result.(parse.Combined)))
+	as.Equal("hello", s.Result.(parse.Combined)[2])
+
+	s, f = many.Parse("blah")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(0, len(s.Result.(parse.Combined)))
+	as.Equal(parse.Input("blah"), s.Remaining)
+}
+
 func stringResults(r ...parse.Result) parse.Result {
 	var buf bytes.Buffer
 	for _, e := range r {
