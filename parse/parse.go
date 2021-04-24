@@ -45,6 +45,8 @@ type (
 
 	// EOF represents the matched EndOfFile Result
 	EOF struct{}
+
+	arg = interface{}
 )
 
 // Error messages
@@ -299,9 +301,7 @@ func (i Input) succeedWith(r Result) (*Success, *Failure) {
 	}, nil
 }
 
-func (i Input) failWithExpected(
-	msg string, args ...interface{},
-) (*Success, *Failure) {
+func (i Input) failWithExpected(msg string, args ...arg) (*Success, *Failure) {
 	got := i
 	if len(got) > maxExpectedGot {
 		got = got[0:maxExpectedGot] + "..."
@@ -314,7 +314,7 @@ func (i Input) failWithExpected(
 	}
 }
 
-func (i Input) failWith(msg string, args ...interface{}) (*Success, *Failure) {
+func (i Input) failWith(msg string, args ...arg) (*Success, *Failure) {
 	return nil, &Failure{
 		Error: fmt.Errorf(msg, args...),
 		Input: i,
