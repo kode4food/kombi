@@ -223,6 +223,29 @@ func TestDefaulted(t *testing.T) {
 	as.Equal("nope", s.Result)
 	as.Equal(parse.Input("doof"), s.Remaining)
 }
+
+func TestIgnored(t *testing.T) {
+	as := assert.New(t)
+
+	ignored := parse.String("SKIP ").Ignore().AndThen(parse.String("THIS"))
+
+	s, f := ignored.Parse("SKIP THIS")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(1, len(s.Result.(parse.Combined)))
+	as.Equal("THIS", s.Result.(parse.Combined)[0])
+
+	s, f = ignored.Parse("NOT THIS")
+	as.Nil(s)
+	as.NotNil(f)
+	as.EqualError(f.Error,
+		fmt.Sprintf(parse.ErrWrappedExpectation,
+			fmt.Sprintf(parse.ErrExpectedString, "SKIP "),
+			"NOT THIS",
+		),
+	)
+}
+
 func stringResults(r ...parse.Result) parse.Result {
 	var buf bytes.Buffer
 	for _, e := range r {

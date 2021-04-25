@@ -43,8 +43,9 @@ type (
 		Input
 	}
 
-	arg = interface{}
-	eof struct{}
+	arg  = interface{}
+	eof  struct{}
+	skip struct{}
 )
 
 // Error messages
@@ -60,8 +61,13 @@ const (
 	maxExpectedGot = 16
 )
 
-// EOF represents the matched EndOfFile Result
-var EOF = &eof{}
+var (
+	// EOF represents the matched EndOfFile Result
+	EOF = &eof{}
+
+	// Skip represents a Parser Result that should be ignored
+	Skip = &skip{}
+)
 
 // Parse uses the current Parser to match the provided string
 func (p Parser) Parse(s string) (*Success, *Failure) {
@@ -96,6 +102,12 @@ func (p Parser) DefaultTo(e Emitter) Parser {
 // by the provided Mapper
 func (p Parser) Map(fn Mapper) Parser {
 	return Map(p, fn)
+}
+
+// Ignore returns a new Parser, the result of which is ignored if
+// matching is successful
+func (p Parser) Ignore() Parser {
+	return Ignore(p)
 }
 
 // Combine returns a new Parser, the Result of which is a value
@@ -173,15 +185,20 @@ func RegExp(s string) Parser {
 
 func combineResults(l, r Result) Result {
 	var res Combined
-	if c, ok := l.(Combined); ok {
-		res = append(res, c...)
-	} else {
-		res = append(res, l)
+	res = appendResults(res, l)
+	res = appendResults(res, r)
+	return res
+}
+
+func appendResults(res Combined, r Result) Combined {
+	c, ok := r.(Combined)
+	if !ok {
+		return appendResults(res, Combined{r})
 	}
-	if c, ok := r.(Combined); ok {
-		res = append(res, c...)
-	} else {
-		res = append(res, r)
+	for _, e := range c {
+		if _, ok := e.(*skip); !ok {
+			res = append(res, e)
+		}
 	}
 	return res
 }
@@ -230,6 +247,18 @@ func Map(p Parser, fn Mapper) Parser {
 		s, f := p(i)
 		if f == nil {
 			return s.Remaining.succeedWith(fn(s.Result))
+		}
+		return nil, f
+	}
+}
+
+// Ignore returns a new Parser, the result of which is ignored if
+// matching is successful
+func Ignore(p Parser) Parser {
+	return func(i Input) (*Success, *Failure) {
+		s, f := p(i)
+		if f == nil {
+			return s.Remaining.succeedWith(Skip)
 		}
 		return nil, f
 	}
