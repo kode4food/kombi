@@ -3,6 +3,7 @@ package parse
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type (
@@ -98,16 +99,16 @@ func (p Parser) DefaultTo(e Emitter) Parser {
 	return DefaultTo(p, e)
 }
 
-// Map returns a new Parser, the Result of which is a value generated
-// by the provided Mapper
-func (p Parser) Map(fn Mapper) Parser {
-	return Map(p, fn)
-}
-
 // Ignore returns a new Parser, the result of which is ignored if
 // matching is successful
 func (p Parser) Ignore() Parser {
 	return Ignore(p)
+}
+
+// Map returns a new Parser, the Result of which is a value generated
+// by the provided Mapper
+func (p Parser) Map(fn Mapper) Parser {
+	return Map(p, fn)
 }
 
 // Combine returns a new Parser, the Result of which is a value
@@ -155,6 +156,22 @@ func String(s string) Parser {
 		if len(i) >= l {
 			cmp := string(i[0:l])
 			if s == cmp {
+				return i[l:].succeedWith(cmp)
+			}
+		}
+		return i.failWithExpected(ErrExpectedString, s)
+	}
+}
+
+// StrCaseCmp returns a Parser that matches the string provided to it. The
+// resulting Parser performs case-insensitive matching
+func StrCaseCmp(s string) Parser {
+	su := strings.ToUpper(s)
+	l := len(su)
+	return func(i Input) (*Success, *Failure) {
+		if len(i) >= l {
+			cmp := string(i[0:l])
+			if su == strings.ToUpper(cmp) {
 				return i[l:].succeedWith(cmp)
 			}
 		}
@@ -252,18 +269,6 @@ func Map(p Parser, fn Mapper) Parser {
 	}
 }
 
-// Ignore returns a new Parser, the result of which is ignored if
-// matching is successful
-func Ignore(p Parser) Parser {
-	return func(i Input) (*Success, *Failure) {
-		s, f := p(i)
-		if f == nil {
-			return s.Remaining.succeedWith(Skip)
-		}
-		return nil, f
-	}
-}
-
 // Optional returns a new Parser that will DefaultTo nil if the match
 // is not successful
 func Optional(p Parser) Parser {
@@ -280,6 +285,18 @@ func DefaultTo(p Parser, missing Emitter) Parser {
 			return s, nil
 		}
 		return i.succeedWith(missing())
+	}
+}
+
+// Ignore returns a new Parser, the result of which is ignored if
+// matching is successful
+func Ignore(p Parser) Parser {
+	return func(i Input) (*Success, *Failure) {
+		s, f := p(i)
+		if f == nil {
+			return s.Remaining.succeedWith(Skip)
+		}
+		return nil, f
 	}
 }
 
