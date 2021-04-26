@@ -228,7 +228,6 @@ func TestIgnored(t *testing.T) {
 	as := assert.New(t)
 
 	ignored := parse.String("SKIP ").Ignore().AndThen(parse.String("THIS"))
-
 	s, f := ignored.Parse("SKIP THIS")
 	as.NotNil(s)
 	as.Nil(f)
@@ -250,7 +249,6 @@ func TestStrCaseCmp(t *testing.T) {
 	as := assert.New(t)
 
 	cmp := parse.StrCaseCmp("Anything")
-
 	s, f := cmp.Parse("anyTHING")
 	as.NotNil(s)
 	as.Nil(f)
