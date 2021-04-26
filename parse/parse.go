@@ -151,12 +151,12 @@ func AnyOf(parsers ...Parser) Parser {
 // String returns a Parser that matches the string provided to it. The
 // resulting Parser performs case-sensitive matching
 func String(s string) Parser {
-	l := len(s)
+	size := len(s)
 	return func(i Input) (*Success, *Failure) {
-		if len(i) >= l {
-			cmp := string(i[0:l])
+		if len(i) >= size {
+			cmp := string(i[0:size])
 			if s == cmp {
-				return i[l:].succeedWith(cmp)
+				return i[size:].succeedWith(cmp)
 			}
 		}
 		return i.failWithExpected(ErrExpectedString, s)
@@ -166,13 +166,13 @@ func String(s string) Parser {
 // StrCaseCmp returns a Parser that matches the string provided to it. The
 // resulting Parser performs case-insensitive matching
 func StrCaseCmp(s string) Parser {
-	su := strings.ToUpper(s)
-	l := len(su)
+	upper := strings.ToUpper(s)
+	size := len(upper)
 	return func(i Input) (*Success, *Failure) {
-		if len(i) >= l {
-			cmp := string(i[0:l])
-			if su == strings.ToUpper(cmp) {
-				return i[l:].succeedWith(cmp)
+		if len(i) >= size {
+			cmp := string(i[0:size])
+			if upper == strings.ToUpper(cmp) {
+				return i[size:].succeedWith(cmp)
 			}
 		}
 		return i.failWithExpected(ErrExpectedString, s)
@@ -189,10 +189,10 @@ func Error(msg string, args ...interface{}) Parser {
 // RegExp returns a Parser node that performs regular expression
 // matching at the beginning of its Input
 func RegExp(s string) Parser {
-	p := regexp.MustCompile("^(" + s + ")")
+	pattern := regexp.MustCompile("^(" + s + ")")
 	return func(i Input) (*Success, *Failure) {
 		src := string(i)
-		if sm := p.FindStringSubmatch(src); sm != nil {
+		if sm := pattern.FindStringSubmatch(src); sm != nil {
 			matched := sm[0]
 			return Input(src[len(matched):]).succeedWith(matched)
 		}
