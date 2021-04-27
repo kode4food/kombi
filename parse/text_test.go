@@ -36,13 +36,13 @@ func TestRegExp(t *testing.T) {
 func TestString(t *testing.T) {
 	as := assert.New(t)
 
-	cmp := parse.String("Case Sensitive")
-	s, f := cmp.Parse("Case Sensitive")
+	strCmp := parse.String("Case Sensitive")
+	s, f := strCmp.Parse("Case Sensitive")
 	as.NotNil(s)
 	as.Nil(f)
 	as.Equal("Case Sensitive", s.Result)
 
-	s, f = cmp.Parse("CaSe SeNsItIve")
+	s, f = strCmp.Parse("CaSe SeNsItIve")
 	as.Nil(s)
 	as.NotNil(f)
 	as.EqualError(f.Error,
@@ -56,13 +56,13 @@ func TestString(t *testing.T) {
 func TestStrCaseCmp(t *testing.T) {
 	as := assert.New(t)
 
-	cmp := parse.StrCaseCmp("Case Insensitive")
-	s, f := cmp.Parse("Case INSENSITIVE")
+	insCmp := parse.StrCaseCmp("Case Insensitive")
+	s, f := insCmp.Parse("Case INSENSITIVE")
 	as.NotNil(s)
 	as.Nil(f)
 	as.Equal("Case INSENSITIVE", s.Result)
 
-	s, f = cmp.Parse("Ca$e INSENSITIVE")
+	s, f = insCmp.Parse("Ca$e INSENSITIVE")
 	as.Nil(s)
 	as.NotNil(f)
 	as.EqualError(f.Error,
