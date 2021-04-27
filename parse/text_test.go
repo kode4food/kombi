@@ -36,19 +36,19 @@ func TestRegExp(t *testing.T) {
 func TestString(t *testing.T) {
 	as := assert.New(t)
 
-	cmp := parse.String("Anything")
-	s, f := cmp.Parse("Anything")
+	cmp := parse.String("Case Sensitive")
+	s, f := cmp.Parse("Case Sensitive")
 	as.NotNil(s)
 	as.Nil(f)
-	as.Equal("Anything", s.Result)
+	as.Equal("Case Sensitive", s.Result)
 
-	s, f = cmp.Parse("aNyThiNg")
+	s, f = cmp.Parse("CaSe SeNsItIve")
 	as.Nil(s)
 	as.NotNil(f)
 	as.EqualError(f.Error,
 		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedString, "Anything"),
-			"aNyThiNg",
+			fmt.Sprintf(parse.ErrExpectedString, "Case Sensitive"),
+			"CaSe SeNsItIve",
 		),
 	)
 }
@@ -56,19 +56,19 @@ func TestString(t *testing.T) {
 func TestStrCaseCmp(t *testing.T) {
 	as := assert.New(t)
 
-	cmp := parse.StrCaseCmp("Anything")
-	s, f := cmp.Parse("anyTHING")
+	cmp := parse.StrCaseCmp("Case Insensitive")
+	s, f := cmp.Parse("Case INSENSITIVE")
 	as.NotNil(s)
 	as.Nil(f)
-	as.Equal("anyTHING", s.Result)
+	as.Equal("Case INSENSITIVE", s.Result)
 
-	s, f = cmp.Parse("aNyThaNg")
+	s, f = cmp.Parse("Ca$e INSENSITIVE")
 	as.Nil(s)
 	as.NotNil(f)
 	as.EqualError(f.Error,
 		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedString, "Anything"),
-			"aNyThaNg",
+			fmt.Sprintf(parse.ErrExpectedString, "Case Insensitive"),
+			"Ca$e INSENSITIVE",
 		),
 	)
 }
