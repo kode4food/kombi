@@ -13,8 +13,8 @@ func TestCombine(t *testing.T) {
 	as := assert.New(t)
 
 	helloThere := parse.
-		String("hello ").Then(
-		parse.String("there").Then(parse.String("!"))).
+		String("hello ").Concat(
+		parse.String("there").Concat(parse.String("!"))).
 		Combine(stringResults)
 
 	s, f := helloThere.Parse("hello there!")
@@ -31,9 +31,9 @@ func TestCombine(t *testing.T) {
 	as.Nil(f)
 	as.Equal("{hello}", s.Result)
 
-	goodbye := parse.Then(
-		parse.String("good").Then(parse.String("")),
-		parse.String("bye").Then(parse.String("")),
+	goodbye := parse.Concat(
+		parse.String("good").Concat(parse.String("")),
+		parse.String("bye").Concat(parse.String("")),
 	).Combine(stringResults)
 
 	s, f = goodbye.Parse("goodbye")

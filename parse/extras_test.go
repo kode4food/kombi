@@ -65,33 +65,10 @@ func TestDefaulted(t *testing.T) {
 	as.Nil(s.Result)
 	as.Equal(parse.Input("doof"), s.Remaining)
 
-	defaulted := parse.String("hello").DefaultTo(func() parse.Result {
-		return "nope"
-	})
+	defaulted := parse.String("hello").DefaultTo("nope")
 	s, f = defaulted.Parse("doof")
 	as.NotNil(s)
 	as.Nil(f)
 	as.Equal("nope", s.Result)
 	as.Equal(parse.Input("doof"), s.Remaining)
-}
-
-func TestIgnored(t *testing.T) {
-	as := assert.New(t)
-
-	ignored := parse.String("SKIP ").Ignore().Then(parse.String("THIS"))
-	s, f := ignored.Parse("SKIP THIS")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(1, len(s.Result.(parse.Results)))
-	as.Equal("THIS", s.Result.(parse.Results)[0])
-
-	s, f = ignored.Parse("NOT THIS")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedString, "SKIP "),
-			"NOT THIS",
-		),
-	)
 }

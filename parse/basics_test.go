@@ -23,29 +23,29 @@ func TestReturn(t *testing.T) {
 func TestBind(t *testing.T) {
 	as := assert.New(t)
 
-	b := func(r parse.Result) parse.Parser {
-		if r.(string) == "hello" {
-			return parse.String(" there!")
-		}
-		return parse.Fail("exploded")
-	}
+	integer := parse.RegExp("[0-9]+").Map(func(r parse.Result) parse.Result {
+		res, _ := strconv.ParseInt(r.(string), 0, 32)
+		return int(res)
+	})
 
-	bound := parse.AnyOf(
-		parse.String("hello"),
-		parse.String("explode"),
-	).Bind(b)
+	add := integer.Bind(
+		func(l parse.Result) parse.Parser {
+			return parse.String("+").Bind(
+				func(_ parse.Result) parse.Parser {
+					return integer.Bind(
+						func(r parse.Result) parse.Parser {
+							return parse.Return(l.(int) + r.(int))
+						},
+					)
+				},
+			)
+		},
+	)
 
-	s, f := bound.Parse("hello there!")
+	s, f := add.Parse("2+8")
 	as.NotNil(s)
 	as.Nil(f)
-	as.Equal(2, len(s.Result.(parse.Results)))
-	as.Equal("hello", s.Result.(parse.Results)[0])
-	as.Equal(" there!", s.Result.(parse.Results)[1])
-
-	s, f = bound.Parse("explode")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error, "exploded")
+	as.Equal(10, s.Result)
 }
 
 func TestAnd(t *testing.T) {

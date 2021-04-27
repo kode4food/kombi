@@ -13,12 +13,7 @@ type (
 	// Result represents a Parser's Success result
 	Result interface{}
 
-	// Results represents multiple Results that have been combined. This
-	// is usually the result of the Bind or Then combinators
-	Results []Result
-
-	eof  struct{}
-	skip struct{}
+	eof struct{}
 )
 
 // Error messages
@@ -26,13 +21,8 @@ const (
 	ErrExpectedEndOfFile = "expected end of file"
 )
 
-var (
-	// EndOfFile represents the matched EOF Result
-	EndOfFile = &eof{}
-
-	// Skip represents a Parser Result that should be ignored
-	Skip = &skip{}
-)
+// EndOfFile represents the matched EOF Result
+var EndOfFile = &eof{}
 
 // Return returns a new Parser. This Parser consumes none of the Input,
 // but instead returns a Success containing the provided Result
@@ -47,27 +37,20 @@ func Return(r Result) Parser {
 // returned by the provided Binder
 func Bind(p Parser, b Binder) Parser {
 	return func(i Input) (*Success, *Failure) {
-		if ls, f := p(i); f != nil {
-			return nil, f
-		} else if rs, f := b(ls.Result)(ls.Remaining); f != nil {
-			return i.failThrough(f)
-		} else {
-			res := combineResults(ls.Result, rs.Result)
-			return rs.Remaining.succeedWith(res)
+		s, f := p(i)
+		if f == nil {
+			return b(s.Result)(s.Remaining)
 		}
+		return nil, f
 	}
 }
 
 // Map returns a new Parser, the Result of which is a value generated
 // by the provided Mapper
 func Map(p Parser, fn Mapper) Parser {
-	return func(i Input) (*Success, *Failure) {
-		s, f := p(i)
-		if f == nil {
-			return s.Remaining.succeedWith(fn(s.Result))
-		}
-		return nil, f
-	}
+	return Bind(p, func(r Result) Parser {
+		return Return(fn(r))
+	})
 }
 
 // Fail returns a Parser node that generates the specified error
@@ -83,7 +66,7 @@ func Satisfy(p Predicate) Parser {
 	return func(i Input) (*Success, *Failure) {
 		m, err := p(i)
 		if err == nil {
-			return i[m:].succeedWith(i[0:m])
+			return i.succeedMatch(m)
 		}
 		return i.failWith(err)
 	}
@@ -114,24 +97,4 @@ func Or(l Parser, r Parser) Parser {
 		}
 		return r(i)
 	}
-}
-
-func combineResults(l, r Result) Result {
-	var res Results
-	res = appendResults(res, l)
-	res = appendResults(res, r)
-	return res
-}
-
-func appendResults(res Results, r Result) Results {
-	c, ok := r.(Results)
-	if !ok {
-		return appendResults(res, Results{r})
-	}
-	for _, e := range c {
-		if _, ok := e.(*skip); !ok {
-			res = append(res, e)
-		}
-	}
-	return res
 }

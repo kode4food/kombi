@@ -25,6 +25,13 @@ func (i Input) succeedWith(r Result) (*Success, *Failure) {
 	}, nil
 }
 
+func (i Input) succeedMatch(idx int) (*Success, *Failure) {
+	return &Success{
+		Result:    i[0:idx],
+		Remaining: i[idx:],
+	}, nil
+}
+
 func (i Input) errExpected(msg string, args ...arg) error {
 	got := i
 	if len(got) > maxExpectedGot {
@@ -40,10 +47,6 @@ func (i Input) failMessage(msg string, args ...arg) (*Success, *Failure) {
 
 func (i Input) failExpected(msg string, args ...arg) (*Success, *Failure) {
 	return i.failWith(i.errExpected(msg, args...))
-}
-
-func (i Input) failThrough(f *Failure) (*Success, *Failure) {
-	return i.failWith(f.Error)
 }
 
 func (i Input) failWith(err error) (*Success, *Failure) {
