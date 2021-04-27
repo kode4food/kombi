@@ -10,6 +10,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBind(t *testing.T) {
+	as := assert.New(t)
+
+	b := func(r parse.Result) parse.Parser {
+		if r.(string) == "hello" {
+			return parse.String(" there!")
+		}
+		return parse.Error("exploded")
+	}
+
+	bound := parse.AnyOf(
+		parse.String("hello"),
+		parse.String("explode"),
+	).Bind(b)
+
+	s, f := bound.Parse("hello there!")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(2, len(s.Result.(parse.Combined)))
+	as.Equal("hello", s.Result.(parse.Combined)[0])
+	as.Equal(" there!", s.Result.(parse.Combined)[1])
+
+	s, f = bound.Parse("explode")
+	as.Nil(s)
+	as.NotNil(f)
+	as.EqualError(f.Error, "exploded")
+}
+
 func TestAndThen(t *testing.T) {
 	as := assert.New(t)
 

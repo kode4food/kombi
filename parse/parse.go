@@ -10,6 +10,9 @@ type (
 	// Parser is the signature for a parsing node
 	Parser func(Input) (*Success, *Failure)
 
+	// Binder returns a Parser based on the provided Result
+	Binder func(Result) Parser
+
 	// Mapper maps one Result value to another
 	Mapper func(Result) Result
 
@@ -73,6 +76,13 @@ var (
 // Parse uses the current Parser to match the provided string
 func (p Parser) Parse(s string) (*Success, *Failure) {
 	return p(Input(s))
+}
+
+// Bind returns a new Parser, the Result of which is based on the Result
+// of this Parser being Combined with the Result of the Parser returned
+// by the provided Binder
+func (p Parser) Bind(b Binder) Parser {
+	return Bind(p, b)
 }
 
 // AndThen returns a new Parser based on the Result of this Parser
@@ -229,19 +239,28 @@ func Combine(p Parser, fn Combiner) Parser {
 	})
 }
 
-// AndThen returns a new Parser based on the Result of the left Parser
-// being Combined with the results of the right Parser
-func AndThen(l Parser, r Parser) Parser {
+// Bind returns a new Parser, the Result of which is based on the Result
+// of the provided Parser being Combined with the Result of the Parser
+// returned by the provided Binder
+func Bind(p Parser, b Binder) Parser {
 	return func(i Input) (*Success, *Failure) {
-		if ls, f := l(i); f != nil {
+		if ls, f := p(i); f != nil {
 			return nil, f
-		} else if rs, f := r(ls.Remaining); f != nil {
+		} else if rs, f := b(ls.Result)(ls.Remaining); f != nil {
 			return i.failThrough(f)
 		} else {
 			res := combineResults(ls.Result, rs.Result)
 			return rs.Remaining.succeedWith(res)
 		}
 	}
+}
+
+// AndThen returns a new Parser based on the Result of the left Parser
+// being Combined with the results of the right Parser
+func AndThen(l Parser, r Parser) Parser {
+	return Bind(l, func(_ Result) Parser {
+		return r
+	})
 }
 
 // OrElse returns a new Parser based on either the successful Result of
