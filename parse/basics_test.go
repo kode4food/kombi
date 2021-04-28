@@ -51,7 +51,7 @@ func TestBind(t *testing.T) {
 func TestAnd(t *testing.T) {
 	as := assert.New(t)
 
-	hello := parse.String("hello").Then(parse.EOF)
+	hello := parse.String("hello").EOF()
 	s, f := hello.Parse("hello")
 	as.NotNil(s)
 	as.Nil(f)
@@ -80,7 +80,7 @@ func TestOr(t *testing.T) {
 	as := assert.New(t)
 
 	maybeHello := parse.EOF.Or(
-		parse.String("hello").Then(parse.EOF),
+		parse.String("hello").EOF(),
 	)
 
 	s, f := maybeHello.Parse("hello")

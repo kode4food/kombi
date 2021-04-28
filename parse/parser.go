@@ -25,6 +25,12 @@ func (p Parser) Parse(s string) (*Success, *Failure) {
 	return p(Input(s))
 }
 
+// Return returns a new Parser. This Parser consumes none of the Input,
+// but instead returns a Success containing the provided Result
+func (p Parser) Return(r Result) Parser {
+	return p.Then(Return(r))
+}
+
 // Bind returns a new Parser, the Result of which is based on the Result
 // of this Parser being Combined with the Result of the Parser returned
 // by the provided Binder
@@ -36,6 +42,22 @@ func (p Parser) Bind(b Binder) Parser {
 // by the provided Mapper
 func (p Parser) Map(fn Mapper) Parser {
 	return Map(p, fn)
+}
+
+// Fail returns a Parser node that generates the specified error
+func (p Parser) Fail(msg string, args ...interface{}) Parser {
+	return p.Then(Fail(msg, args...))
+}
+
+// Satisfy returns a new Parser. This Parser consumes enough of the Input
+// to satisfy the provided Predicate and returns Success on a match
+func (p Parser) Satisfy(pred Predicate) Parser {
+	return p.Then(Satisfy(pred))
+}
+
+// EOF matches the end of the Input
+func (p Parser) EOF() Parser {
+	return p.Then(EOF)
 }
 
 // Then returns a new Parser based on the Result of this Parser

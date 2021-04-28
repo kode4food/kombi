@@ -12,9 +12,9 @@ func TestAnyOf(t *testing.T) {
 	as := assert.New(t)
 
 	maybeGreet := parse.AnyOf(
-		parse.String("hello").Then(parse.EOF),
-		parse.String("howdy").Then(parse.EOF),
-		parse.String("ciao").Then(parse.EOF),
+		parse.String("hello").EOF(),
+		parse.String("howdy").EOF(),
+		parse.String("ciao").EOF(),
 		parse.EOF,
 	)
 
