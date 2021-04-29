@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAnyOf(t *testing.T) {
+func TestAny(t *testing.T) {
 	as := assert.New(t)
 
-	maybeGreet := parse.AnyOf(
+	maybeGreet := parse.Any(
 		parse.String("hello").EOF(),
 		parse.String("howdy").EOF(),
 		parse.String("ciao").EOF(),

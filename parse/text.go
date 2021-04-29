@@ -5,45 +5,63 @@ import (
 	"strings"
 )
 
+type mapString func(string) string
+
 // Error messages
 const (
 	ErrExpectedPattern = "expected pattern: %s"
 	ErrExpectedString  = "expected string %s"
 )
 
-// RegExp returns a Parser node that performs regular expression
-// matching at the beginning of its Input
+// RegExp returns a Parser that is used to Satisfy an IsRegExp Predicate
 func RegExp(s string) Parser {
+	return Satisfy(IsRegExp(s)).Map(toString)
+}
+
+// IsRegExp returns a Predicate that can be used to Satisfy regular
+// expression patterns in the Input
+func IsRegExp(s string) Predicate {
 	pattern := regexp.MustCompile("^(" + s + ")")
-	return Satisfy(func(i Input) (int, error) {
+	return func(i Input) (int, error) {
 		if sm := pattern.FindStringSubmatch(string(i)); sm != nil {
 			matched := sm[0]
 			return len(matched), nil
 		}
 		return 0, i.errExpected(ErrExpectedPattern, s)
-	}).Map(toString)
+	}
 }
 
-// String returns a Parser that matches the string provided to it. The
-// resulting Parser performs case-sensitive matching
+// String returns a Parser that is used to Satisfy an IsString Predicate
 func String(s string) Parser {
-	return stringParser(s, stringIdentify)
+	return Satisfy(IsString(s)).Map(toString)
 }
 
-// StrCaseCmp returns a Parser that matches the string provided to it. The
-// resulting Parser performs case-insensitive matching
+// IsString returns a Predicate that can be used to Satisfy case-sensitive
+// string patterns in the Input
+func IsString(s string) Predicate {
+	return stringPredicate(s, stringIdentity)
+}
+
+// StrCaseCmp returns a Parser that is used to Satisfy an IsStrCaseCmp
+// Predicate
 func StrCaseCmp(s string) Parser {
-	return stringParser(s, strings.ToUpper)
+	return Satisfy(IsStrCaseCmp(s)).Map(toString)
 }
 
-func stringIdentify(s string) string {
+// IsStrCaseCmp returns a Predicate that can be used to Satisfy
+// case-insensitive string patterns in the Input
+func IsStrCaseCmp(s string) Predicate {
+	return stringPredicate(s, strings.ToUpper)
+}
+
+func stringIdentity(s string) string {
 	return s
 }
 
-func stringParser(s string, normalize func(string) string) Parser {
+func stringPredicate(s string, normalize mapString) Predicate {
 	n := normalize(s)
 	size := len(n)
-	return Satisfy(func(i Input) (int, error) {
+	return func(i Input) (int, error) {
 		if len(i) >= size {
 			cmp := string(i[0:size])
 			if n == normalize(cmp) {
@@ -51,7 +69,7 @@ func stringParser(s string, normalize func(string) string) Parser {
 			}
 		}
 		return 0, i.errExpected(ErrExpectedString, s)
-	}).Map(toString)
+	}
 }
 
 func toString(r Result) Result {
