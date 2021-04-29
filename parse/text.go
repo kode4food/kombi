@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type mapString func(string) string
+type normalizer func(string) string
 
 // Error messages
 const (
@@ -58,13 +58,13 @@ func stringIdentity(s string) string {
 	return s
 }
 
-func stringPredicate(s string, normalize mapString) Predicate {
-	n := normalize(s)
+func stringPredicate(s string, norm normalizer) Predicate {
+	n := norm(s)
 	size := len(n)
 	return func(i Input) (int, error) {
 		if len(i) >= size {
 			cmp := string(i[0:size])
-			if n == normalize(cmp) {
+			if n == norm(cmp) {
 				return len(cmp), nil
 			}
 		}
