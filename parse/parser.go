@@ -38,6 +38,12 @@ func (p Parser) Bind(b Binder) Parser {
 	return Bind(p, b)
 }
 
+// Capture returns a new Parser, the Result of which is taken from this
+// Parser and provided to the Accept function
+func (p Parser) Capture(a Accept) Parser {
+	return Capture(p, a)
+}
+
 // Map returns a new Parser, the Result of which is a value generated
 // by the provided Mapper
 func (p Parser) Map(fn Mapper) Parser {

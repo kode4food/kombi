@@ -48,6 +48,33 @@ func TestBind(t *testing.T) {
 	as.Equal(10, s.Result)
 }
 
+func TestCapture(t *testing.T) {
+	as := assert.New(t)
+
+	var captured int
+	integer := parse.RegExp("[0-9]+").Capture(func(r parse.Result) {
+		res, _ := strconv.ParseInt(r.(string), 0, 32)
+		captured = int(res)
+	})
+
+	s, f := integer.Parse("nope")
+	as.Nil(s)
+	as.NotNil(f)
+	as.EqualError(f.Error,
+		fmt.Sprintf(parse.ErrWrappedExpectation,
+			fmt.Sprintf(parse.ErrExpectedPattern, "[0-9]+"),
+			"nope",
+		),
+	)
+	as.Equal(0, captured)
+
+	s, f = integer.Parse("42")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal("42", s.Result)
+	as.Equal(42, captured)
+}
+
 func TestAnd(t *testing.T) {
 	as := assert.New(t)
 

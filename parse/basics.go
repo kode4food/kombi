@@ -4,6 +4,9 @@ type (
 	// Binder returns a Parser based on the provided Result
 	Binder func(Result) Parser
 
+	// Accept receives a Result from a Capture Parser
+	Accept func(Result)
+
 	// Mapper maps one Result value to another
 	Mapper func(Result) Result
 
@@ -43,6 +46,15 @@ func Bind(p Parser, b Binder) Parser {
 		}
 		return nil, f
 	}
+}
+
+// Capture returns a new Parser, the Result of which is taken from the
+// supplied Parser and provided to the Accept function
+func Capture(p Parser, accept Accept) Parser {
+	return Map(p, func(r Result) Result {
+		accept(r)
+		return r
+	})
 }
 
 // Map returns a new Parser, the Result of which is a value generated
