@@ -34,33 +34,19 @@ func Combine(p Parser, fn Combiner) Parser {
 // set of values matched by the provided Parser being performed one or
 // more times
 func OneOrMore(p Parser) Parser {
-	return nOrMore(1, p)
+	return Concat(p, ZeroOrMore(p))
 }
 
 // ZeroOrMore returns a new Parser, the Result of which is the Combined
 // set of values matched by the provided Parser being performed zero or
 // more times
 func ZeroOrMore(p Parser) Parser {
-	return nOrMore(0, p)
-}
-
-func nOrMore(min int, p Parser) Parser {
-	return func(i Input) (*Success, *Failure) {
-		var res Results
-		next := i
-		for count := 0; ; count++ {
-			s, f := p(next)
-			if f == nil {
-				res = append(res, s.Result)
-				next = s.Remaining
-				continue
-			}
-			if count >= min {
-				return next.succeedWith(res)
-			}
-			return nil, f
-		}
-	}
+	return Or(
+		p.Bind(func(r Result) Parser {
+			return Concat(Return(r), ZeroOrMore(p))
+		}),
+		Return(Results{}),
+	)
 }
 
 func concatResults(l, r Result) Results {
