@@ -18,6 +18,9 @@ type (
 		Error error
 		Input
 	}
+
+	// Result represents a Parser's Success result
+	Result interface{}
 )
 
 // Parse uses the current Parser to match the provided string
@@ -114,4 +117,11 @@ func (p Parser) OneOrMore() Parser {
 // more times
 func (p Parser) ZeroOrMore() Parser {
 	return ZeroOrMore(p)
+}
+
+// Delimited returns a new Parser, the Result of which is the Combined
+// set of values matched by the provided Parser and delimited by the
+// provided Delimiter, performed one or more times
+func (p Parser) Delimited(d Delimiter) Parser {
+	return Delimited(p, d)
 }

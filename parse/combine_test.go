@@ -80,6 +80,19 @@ func TestZeroOrMore(t *testing.T) {
 	as.Equal(parse.Input("blah"), s.Remaining)
 }
 
+func TestDelimited(t *testing.T) {
+	as := assert.New(t)
+
+	nums := parse.RegExp("[0-9]+").Delimited(parse.String(","))
+	s, f := nums.Parse("1,2,42")
+	as.NotNil(s)
+	as.Nil(f)
+	as.Equal(3, len(s.Result.(parse.Results)))
+	as.Equal("1", s.Result.(parse.Results)[0])
+	as.Equal("2", s.Result.(parse.Results)[1])
+	as.Equal("42", s.Result.(parse.Results)[2])
+}
+
 func stringResults(r ...parse.Result) parse.Result {
 	var buf bytes.Buffer
 	for _, e := range r {

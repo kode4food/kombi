@@ -4,6 +4,9 @@ type (
 	// Combiner takes multiple Result values and combines them into one
 	Combiner func(...Result) Result
 
+	// Delimiter is a Parser, but will be ignored when combined
+	Delimiter = Parser
+
 	// Results represents multiple Results that have been combined. This
 	// is usually the result of the Bind or Then combinators
 	Results []Result
@@ -47,6 +50,13 @@ func ZeroOrMore(p Parser) Parser {
 		}),
 		Return(Results{}),
 	)
+}
+
+// Delimited returns a new Parser, the Result of which is the Combined
+// set of values matched by the provided Parser and delimited by the
+// provided Delimiter, performed one or more times
+func Delimited(p Parser, d Delimiter) Parser {
+	return Concat(p, ZeroOrMore(d.Then(p)))
 }
 
 func concatResults(l, r Result) Results {

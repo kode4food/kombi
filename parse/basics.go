@@ -13,9 +13,6 @@ type (
 	// Predicate checks the beginning of its provided Input for a match
 	Predicate func(Input) (int, error)
 
-	// Result represents a Parser's Success result
-	Result interface{}
-
 	eof struct{}
 )
 
