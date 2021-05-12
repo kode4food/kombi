@@ -5,31 +5,26 @@ import (
 	"testing"
 
 	"github.com/caravan/kombi/parse"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParserReturn(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	p := parse.String("hello").Return(true)
 	s, f := p.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
-	as.True(s.Result.(bool))
+	as.SuccessResult(s, f, true)
 }
 
 func TestParserFail(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	p := parse.String("hello").Fail("explode!")
 	s, f := p.Parse("hello")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error, "explode!")
+	as.FailureError(s, f, "explode!")
 }
 
 func TestParserSatisfy(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	p := parse.String("hello").Satisfy(func(i parse.Input) (int, error) {
 		if i[0] == '!' {
@@ -39,7 +34,5 @@ func TestParserSatisfy(t *testing.T) {
 	})
 
 	s, f := p.Parse("hello!")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(parse.Input("!"), s.Result)
+	as.SuccessResult(s, f, parse.Input("!"))
 }

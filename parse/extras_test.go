@@ -1,15 +1,13 @@
 package parse_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/caravan/kombi/parse"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAny(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	maybeGreet := parse.Any(
 		parse.String("hello").EOF(),
@@ -18,57 +16,31 @@ func TestAny(t *testing.T) {
 		parse.EOF,
 	)
 
-	s, f := maybeGreet.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
+	as.Success(maybeGreet.Parse("hello"))
+	as.Success(maybeGreet.Parse("howdy"))
+	as.Success(maybeGreet.Parse("ciao"))
 
-	s, f = maybeGreet.Parse("howdy")
-	as.NotNil(s)
-	as.Nil(f)
-
-	s, f = maybeGreet.Parse("ciao")
-	as.NotNil(s)
-	as.Nil(f)
-
-	s, f = maybeGreet.Parse("not")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			parse.ErrExpectedEndOfFile, "not",
-		),
-	)
+	s, f := maybeGreet.Parse("not")
+	as.FailureWrapped(s, f, parse.ErrExpectedEndOfFile, "not")
 
 	s, f = maybeGreet.Parse("way too long so will be truncated")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			parse.ErrExpectedEndOfFile, "way too long so ...",
-		),
-	)
+	as.FailureWrapped(s, f, parse.ErrExpectedEndOfFile, "way too long so ...")
 }
 
 func TestDefaulted(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	optional := parse.String("hello").Optional()
 	s, f := optional.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("hello", s.Result)
+	as.SuccessResult(s, f, "hello")
 	as.Equal(parse.Input(""), s.Remaining)
 
 	s, f = optional.Parse("doof")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Nil(s.Result)
+	as.SuccessResult(s, f, nil)
 	as.Equal(parse.Input("doof"), s.Remaining)
 
 	defaulted := parse.String("hello").DefaultTo("nope")
 	s, f = defaulted.Parse("doof")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("nope", s.Result)
+	as.SuccessResult(s, f, "nope")
 	as.Equal(parse.Input("doof"), s.Remaining)
 }

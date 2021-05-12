@@ -6,22 +6,19 @@ import (
 	"testing"
 
 	"github.com/caravan/kombi/parse"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestReturn(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	res := parse.Return("hello")
 	s, f := res.Parse("this is a test")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("hello", s.Result)
+	as.SuccessResult(s, f, "hello")
 	as.Equal(parse.Input("this is a test"), s.Remaining)
 }
 
 func TestBind(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	integer := parse.RegExp("[0-9]+").Map(func(r parse.Result) parse.Result {
 		res, _ := strconv.ParseInt(r.(string), 0, 32)
@@ -43,13 +40,11 @@ func TestBind(t *testing.T) {
 	)
 
 	s, f := add.Parse("2+8")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(10, s.Result)
+	as.SuccessResult(s, f, 10)
 }
 
 func TestCapture(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	var captured int
 	integer := parse.RegExp("[0-9]+").Capture(func(r parse.Result) {
@@ -58,78 +53,49 @@ func TestCapture(t *testing.T) {
 	})
 
 	s, f := integer.Parse("nope")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedPattern, "[0-9]+"),
-			"nope",
-		),
+	as.FailureWrapped(s, f,
+		fmt.Sprintf(parse.ErrExpectedPattern, "[0-9]+"), "nope",
 	)
 	as.Equal(0, captured)
 
 	s, f = integer.Parse("42")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("42", s.Result)
+	as.SuccessResult(s, f, "42")
 	as.Equal(42, captured)
 }
 
 func TestAnd(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	hello := parse.String("hello").EOF()
 	s, f := hello.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
+	as.Success(s, f)
 
 	s, f = hello.Parse("hell no")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedString, "hello"),
-			"hell no",
-		),
+	as.FailureWrapped(s, f,
+		fmt.Sprintf(parse.ErrExpectedString, "hello"),
+		"hell no",
 	)
 
 	s, f = hello.Parse("hello you")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			parse.ErrExpectedEndOfFile, " you",
-		),
-	)
+	as.FailureWrapped(s, f, parse.ErrExpectedEndOfFile, " you")
 }
 
 func TestOr(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	maybeHello := parse.EOF.Or(
 		parse.String("hello").EOF(),
 	)
 
-	s, f := maybeHello.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
+	as.Success(maybeHello.Parse("hello"))
+	as.Success(maybeHello.Parse(""))
 
-	s, f = maybeHello.Parse("")
-	as.NotNil(s)
-	as.Nil(f)
-
-	s, f = maybeHello.Parse("hello there")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			parse.ErrExpectedEndOfFile, " there",
-		),
-	)
+	s, f := maybeHello.Parse("hello there")
+	as.FailureWrapped(s, f, parse.ErrExpectedEndOfFile, " there")
 }
 
 func TestMap(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	intMapper := parse.RegExp("[0-9]+").Map(
 		func(r parse.Result) parse.Result {
@@ -141,12 +107,8 @@ func TestMap(t *testing.T) {
 	).Or(parse.Fail("couldn't parse int"))
 
 	s, f := intMapper.Parse("42")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(42, s.Result)
+	as.SuccessResult(s, f, 42)
 
 	s, f = intMapper.Parse("hello")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error, "couldn't parse int")
+	as.FailureError(s, f, "couldn't parse int")
 }

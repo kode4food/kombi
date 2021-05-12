@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/caravan/kombi/parse"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCombine(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	helloThere := parse.
 		String("hello ").Concat(
@@ -18,18 +17,14 @@ func TestCombine(t *testing.T) {
 		Combine(stringResults)
 
 	s, f := helloThere.Parse("hello there!")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("hello ->there->!->", s.Result)
+	as.SuccessResult(s, f, "hello ->there->!->")
 
 	hello := parse.String("hello").
 		Combine(func(r ...parse.Result) parse.Result {
 			return fmt.Sprintf("{%s}", r[0].(string))
 		})
 	s, f = hello.Parse("hello")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("{hello}", s.Result)
+	as.SuccessResult(s, f, "{hello}")
 
 	goodbye := parse.Concat(
 		parse.String("good").Concat(parse.String("")),
@@ -37,60 +32,41 @@ func TestCombine(t *testing.T) {
 	).Combine(stringResults)
 
 	s, f = goodbye.Parse("goodbye")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal("good->->bye->->", s.Result)
+	as.SuccessResult(s, f, "good->->bye->->")
 }
 
 func TestOneOrMore(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	many := parse.String("hello").OneOrMore()
 	s, f := many.Parse("hellohellohello")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(3, len(s.Result.(parse.Results)))
-	as.Equal("hello", s.Result.(parse.Results)[2])
+	as.SuccessResults(s, f, "hello", "hello", "hello")
 
 	s, f = many.Parse("blah")
-	as.Nil(s)
-	as.NotNil(f)
-	as.EqualError(f.Error,
-		fmt.Sprintf(parse.ErrWrappedExpectation,
-			fmt.Sprintf(parse.ErrExpectedString, "hello"),
-			"blah",
-		),
+	as.FailureWrapped(s, f,
+		fmt.Sprintf(parse.ErrExpectedString, "hello"),
+		"blah",
 	)
 }
 
 func TestZeroOrMore(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	many := parse.String("hello").ZeroOrMore()
 	s, f := many.Parse("hellohellohello")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(3, len(s.Result.(parse.Results)))
-	as.Equal("hello", s.Result.(parse.Results)[2])
+	as.SuccessResults(s, f, "hello", "hello", "hello")
 
 	s, f = many.Parse("blah")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(0, len(s.Result.(parse.Results)))
+	as.SuccessResults(s, f)
 	as.Equal(parse.Input("blah"), s.Remaining)
 }
 
 func TestDelimited(t *testing.T) {
-	as := assert.New(t)
+	as := NewAssert(t)
 
 	nums := parse.RegExp("[0-9]+").Delimited(parse.String(","))
 	s, f := nums.Parse("1,2,42")
-	as.NotNil(s)
-	as.Nil(f)
-	as.Equal(3, len(s.Result.(parse.Results)))
-	as.Equal("1", s.Result.(parse.Results)[0])
-	as.Equal("2", s.Result.(parse.Results)[1])
-	as.Equal("42", s.Result.(parse.Results)[2])
+	as.SuccessResults(s, f, "1", "2", "42")
 }
 
 func stringResults(r ...parse.Result) parse.Result {
