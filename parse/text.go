@@ -18,8 +18,8 @@ func RegExp(s string) Parser {
 	return Satisfy(IsRegExp(s)).Map(toString)
 }
 
-// IsRegExp returns a Predicate that can be used to Satisfy regular
-// expression patterns in the Input
+// IsRegExp returns a Predicate that can be used to Satisfy regular expression
+// patterns in the Input
 func IsRegExp(s string) Predicate {
 	pattern := regexp.MustCompile("^(" + s + ")")
 	return func(i Input) (int, error) {
