@@ -3,7 +3,7 @@ package parse_test
 import (
 	"testing"
 
-	"github.com/caravan/kombi/parse"
+	"github.com/kode4food/kombi/parse"
 )
 
 func TestAny(t *testing.T) {

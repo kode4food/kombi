@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/caravan/kombi/parse"
+	"github.com/kode4food/kombi/parse"
 )
 
 func TestReturn(t *testing.T) {

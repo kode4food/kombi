@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/caravan/kombi/parse"
+	"github.com/kode4food/kombi/parse"
 	"github.com/stretchr/testify/assert"
 )
 

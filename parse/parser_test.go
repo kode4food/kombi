@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/caravan/kombi/parse"
+	"github.com/kode4food/kombi/parse"
 )
 
 func TestParserReturn(t *testing.T) {

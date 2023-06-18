@@ -1,4 +1,4 @@
-module github.com/caravan/kombi
+module github.com/kode4food/kombi
 
 go 1.19
 
