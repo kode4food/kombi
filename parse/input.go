@@ -6,7 +6,7 @@ type (
 	// Input represents a Parser's input
 	Input string
 
-	arg = interface{}
+	arg = any
 )
 
 // Error messages
@@ -18,7 +18,7 @@ const (
 	maxExpectedGot = 16
 )
 
-func (i Input) succeedWith(r Result) (*Success, *Failure) {
+func (i Input) succeedWith(r any) (*Success, *Failure) {
 	return &Success{
 		Result:    r,
 		Remaining: i,

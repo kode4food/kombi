@@ -20,17 +20,17 @@ func TestReturn(t *testing.T) {
 func TestBind(t *testing.T) {
 	as := NewAssert(t)
 
-	integer := parse.RegExp("[0-9]+").Map(func(r parse.Result) parse.Result {
+	integer := parse.RegExp("[0-9]+").Map(func(r any) any {
 		res, _ := strconv.ParseInt(r.(string), 0, 32)
 		return int(res)
 	})
 
 	add := integer.Bind(
-		func(l parse.Result) parse.Parser {
+		func(l any) parse.Parser {
 			return parse.String("+").Bind(
-				func(_ parse.Result) parse.Parser {
+				func(_ any) parse.Parser {
 					return integer.Bind(
-						func(r parse.Result) parse.Parser {
+						func(r any) parse.Parser {
 							return parse.Return(l.(int) + r.(int))
 						},
 					)
@@ -47,7 +47,7 @@ func TestCapture(t *testing.T) {
 	as := NewAssert(t)
 
 	var captured int
-	integer := parse.RegExp("[0-9]+").Capture(func(r parse.Result) {
+	integer := parse.RegExp("[0-9]+").Capture(func(r any) {
 		res, _ := strconv.ParseInt(r.(string), 0, 32)
 		captured = int(res)
 	})
@@ -98,7 +98,7 @@ func TestMap(t *testing.T) {
 	as := NewAssert(t)
 
 	intMapper := parse.RegExp("[0-9]+").Map(
-		func(r parse.Result) parse.Result {
+		func(r any) any {
 			if res, err := strconv.ParseInt(r.(string), 10, 32); err == nil {
 				return int(res)
 			}

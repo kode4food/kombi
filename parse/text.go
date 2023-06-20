@@ -72,6 +72,6 @@ func stringPredicate(s string, norm normalizer) Predicate {
 	}
 }
 
-func toString(r Result) Result {
+func toString(r any) any {
 	return string(r.(Input))
 }

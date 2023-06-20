@@ -20,7 +20,7 @@ func TestCombine(t *testing.T) {
 	as.SuccessResult(s, f, "hello ->there->!->")
 
 	hello := parse.String("hello").
-		Combine(func(r ...parse.Result) parse.Result {
+		Combine(func(r ...any) any {
 			return fmt.Sprintf("{%s}", r[0].(string))
 		})
 	s, f = hello.Parse("hello")
@@ -69,7 +69,7 @@ func TestDelimited(t *testing.T) {
 	as.SuccessResults(s, f, "1", "2", "42")
 }
 
-func stringResults(r ...parse.Result) parse.Result {
+func stringResults(r ...any) any {
 	var buf bytes.Buffer
 	for _, e := range r {
 		buf.WriteString(e.(string))

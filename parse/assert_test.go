@@ -24,14 +24,14 @@ func (as *Assertions) Success(s *parse.Success, f *parse.Failure) {
 }
 
 func (as *Assertions) SuccessResult(
-	s *parse.Success, f *parse.Failure, r interface{},
+	s *parse.Success, f *parse.Failure, r any,
 ) {
 	as.Success(s, f)
 	as.Equal(r, s.Result)
 }
 
 func (as *Assertions) SuccessResults(
-	s *parse.Success, f *parse.Failure, r ...interface{},
+	s *parse.Success, f *parse.Failure, r ...any,
 ) {
 	as.Success(s, f)
 	as.Equal(len(r), len(s.Result.(parse.Results)))
@@ -46,20 +46,20 @@ func (as *Assertions) Failure(s *parse.Success, f *parse.Failure) {
 }
 
 func (as *Assertions) FailureWrapped(
-	s *parse.Success, f *parse.Failure, msg string, args ...interface{},
+	s *parse.Success, f *parse.Failure, msg string, args ...any,
 ) {
 	as.Failure(s, f)
 	as.Wrapped(f.Error, msg, args...)
 }
 
 func (as *Assertions) FailureError(
-	s *parse.Success, f *parse.Failure, msg string, args ...interface{},
+	s *parse.Success, f *parse.Failure, msg string, args ...any,
 ) {
 	as.Failure(s, f)
 	as.EqualError(f.Error, msg, args...)
 }
 
-func (as *Assertions) Wrapped(err error, msg string, args ...interface{}) {
-	allArgs := append([]interface{}{msg}, args...)
+func (as *Assertions) Wrapped(err error, msg string, args ...any) {
+	allArgs := append([]any{msg}, args...)
 	as.EqualError(err, fmt.Sprintf(parse.ErrWrappedExpectation, allArgs...))
 }

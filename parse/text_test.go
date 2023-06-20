@@ -11,7 +11,7 @@ import (
 func TestRegExp(t *testing.T) {
 	as := NewAssert(t)
 
-	integer := parse.RegExp("[0-9]+").Map(func(r parse.Result) parse.Result {
+	integer := parse.RegExp("[0-9]+").Map(func(r any) any {
 		res, _ := strconv.ParseInt(r.(string), 0, 32)
 		return int(res)
 	})
