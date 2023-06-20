@@ -16,7 +16,7 @@ func Optional(p Parser) Parser {
 	return DefaultTo(p, nil)
 }
 
-// DefaultTo returns a new Parser that will return the provided any if the
+// DefaultTo returns a new Parser that will return the provided result if the
 // provided Parser match is not successful
 func DefaultTo(p Parser, r any) Parser {
 	return Or(p, Return(r))
