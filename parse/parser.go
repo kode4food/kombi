@@ -26,7 +26,7 @@ func (p Parser) Parse(s string) (*Success, *Failure) {
 }
 
 // Return returns a new Parser. This Parser consumes none of the Input, but
-// instead returns a Success containing the provided any
+// instead returns a Success containing the provided result
 func (p Parser) Return(r any) Parser {
 	return p.Then(Return(r))
 }

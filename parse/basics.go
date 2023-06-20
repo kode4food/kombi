@@ -1,7 +1,7 @@
 package parse
 
 type (
-	// Binder returns a Parser based on the provided any
+	// Binder returns a Parser based on the provided result
 	Binder func(any) Parser
 
 	// Accept receives a result from a Capture Parser
@@ -21,11 +21,11 @@ const (
 	ErrExpectedEndOfFile = "expected end of file"
 )
 
-// EndOfFile represents the matched EOF any
+// EndOfFile represents the matched EOF result
 var EndOfFile = &eof{}
 
 // Return returns a new Parser. This Parser consumes none of the Input, but
-// instead returns a Success containing the provided any
+// instead returns a Success containing the provided result
 func Return(r any) Parser {
 	return func(i Input) (*Success, *Failure) {
 		return i.succeedWith(r)
